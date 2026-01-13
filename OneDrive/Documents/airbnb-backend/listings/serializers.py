@@ -8,7 +8,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserProfile
-        fields = ['id', 'username', 'email', 'name', 'role', 'created_at']
+        fields = ['id', 'username', 'email', 'name', 'role', 'phone', 'bio', 'avatar', 'created_at']
 
 
 class PropertyImageSerializer(serializers.ModelSerializer):
@@ -22,7 +22,7 @@ class PropertySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Property
-        fields = ['id', 'owner', 'owner_username', 'title', 'location', 'price']
+        fields = ['id', 'owner', 'owner_username', 'title', 'location', 'price', 'description', 'status']
         read_only_fields = ['owner']
 
 
@@ -51,7 +51,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Review
-        fields = ['id', 'user', 'user_username', 'property', 'property_title', 'rating', 'comment']
+        fields = ['id', 'user', 'user_username', 'property', 'property_title', 'booking', 'rating', 'comment']
         read_only_fields = ['user']
 
 

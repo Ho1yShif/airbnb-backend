@@ -14,6 +14,9 @@ class UserProfile(models.Model):
     name = models.CharField(max_length=100, blank=True)  # As per ERD
     email = models.EmailField(blank=True)  # As per ERD
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='guest')
+    phone = models.CharField(max_length=20, blank=True)
+    bio = models.TextField(blank=True)
+    avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -21,10 +24,18 @@ class UserProfile(models.Model):
 
 
 class Property(models.Model):
+    STATUS_CHOICES = [
+        ('available', 'Available'),
+        ('unavailable', 'Unavailable'),
+        ('pending', 'Pending'),
+    ]
+
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='properties')
     title = models.CharField(max_length=200)
     location = models.CharField(max_length=300)
     price = models.DecimalField(max_digits=10, decimal_places=2)
+    description = models.TextField(blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='available')
 
     def __str__(self):
         return self.title
@@ -79,6 +90,7 @@ class Payment(models.Model):
 class Review(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reviews')
     property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='reviews')
+    booking = models.OneToOneField(Booking, on_delete=models.CASCADE, related_name='review')
     rating = models.PositiveIntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
     comment = models.TextField(blank=True)
 

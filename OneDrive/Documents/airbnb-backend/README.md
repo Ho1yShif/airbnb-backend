@@ -180,4 +180,10 @@ POST /api/bookings/
 
 ## License
 
+
+## Project Maintenance & Contact
+
+Maintained by **Martin Mawien**.  
+For questions, issues, or collaboration requests, please use the repository's issue tracker or contact via GitHub: [Martin-Mawien](https://github.com/martin-mawien).
+
 This project is for educational purposes. Ensure compliance with licensing requirements for any third-party integrations.
