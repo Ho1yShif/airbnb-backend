@@ -1,0 +1,13 @@
+LOAD DATABASE
+    FROM mysql://root:your_mysql_password@mysql/airbnb_erd
+    INTO postgresql://airbnb_user:airbnb_pass@db:5432/airbnb
+
+ WITH include no drop, create tables, create indexes, reset sequences, data only
+
+ SET maintenance_work_mem to '128MB', work_mem to '12MB'
+
+ CAST type datetime to timestamptz drop default drop not null using zero-dates-to-null,
+     type date drop not null drop default using zero-dates-to-null
+
+ BEFORE LOAD DO
+    $$ create schema if not exists public; $$

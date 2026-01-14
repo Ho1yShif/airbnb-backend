@@ -1,6 +1,6 @@
 # Airbnb Clone Backend
 
-A scalable, secure backend solution for a property rental platform inspired by Airbnb. Built with Django, Django REST Framework, PostgreSQL, GraphQL, Celery, and Redis.
+A scalable, secure backend solution for a property rental platform inspired by Airbnb. Built with Django and PostgreSQL.
 
 ## Features
 
@@ -10,19 +10,12 @@ A scalable, secure backend solution for a property rental platform inspired by A
 - **Payment Processing**: Secure payment handling with status tracking
 - **Review System**: 1-5 star ratings and comments for properties
 - **Wishlist**: User favorite property collections
-- **REST API**: Full CRUD operations with filtering and search
-- **GraphQL API**: Flexible querying capabilities
 - **Admin Dashboard**: Django admin for content management
-- **Asynchronous Tasks**: Celery for background processing
-- **Caching**: Redis for performance optimization
 
 ## Technology Stack
 
-- **Backend**: Django 6.0, Django REST Framework
+- **Backend**: Django 6.0
 - **Database**: PostgreSQL
-- **GraphQL**: Graphene-Django
-- **Task Queue**: Celery with Redis
-- **Authentication**: Session-based with REST Framework
 - **File Storage**: Local media files (configurable for cloud)
 - **Containerization**: Docker-ready
 
@@ -57,10 +50,6 @@ A scalable, secure backend solution for a property rental platform inspired by A
 - `GET/POST /api/wishlists/` - Wishlists
 - `GET/POST /api/property-images/` - Property images
 
-### GraphQL API (`/graphql/`)
-- Flexible querying of all entities
-- GraphiQL interface for testing
-
 ## Setup Instructions
 
 1. **Clone and Install Dependencies**:
@@ -75,30 +64,20 @@ pip install -r requirements.txt
    - Create database: `airbnb_clone`
    - Update `.env` with database credentials
 
-3. **Redis Setup**:
-   - Install Redis server
-   - Ensure running on default port 6379
-
-4. **Run Migrations**:
+3. **Run Migrations**:
 ```bash
 python manage.py migrate
 ```
 
-5. **Create Superuser**:
+4. **Create Superuser**:
 ```bash
 python manage.py createsuperuser
 ```
 
-6. **Start Services**:
+5. **Start Services**:
 ```bash
 # Terminal 1: Django server
 python manage.py runserver
-
-# Terminal 2: Celery worker
-celery -A airbnb worker --loglevel=info
-
-# Terminal 3: Redis server (if not running)
-redis-server
 ```
 
 ## Environment Variables
@@ -110,7 +89,6 @@ DB_USER=postgres
 DB_PASSWORD=your_password
 DB_HOST=localhost
 DB_PORT=5432
-REDIS_URL=redis://localhost:6379/0
 ```
 
 ## API Usage
@@ -132,21 +110,6 @@ POST /api/bookings/
 }
 ```
 
-### GraphQL Example
-```graphql
-{
-  properties {
-    id
-    title
-    location
-    price
-    owner {
-      username
-    }
-  }
-}
-```
-
 ## Security Features
 
 - **Authentication**: Session-based with CSRF protection
@@ -160,7 +123,6 @@ POST /api/bookings/
 
 - **Admin Interface**: `/admin/` for content management
 - **API Documentation**: DRF browsable API at `/api/`
-- **GraphQL Playground**: `/graphql/` with GraphiQL
 - **Testing**: Run `python manage.py test`
 - **Linting**: Follow PEP 8 standards
 

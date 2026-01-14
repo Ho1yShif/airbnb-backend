@@ -1,73 +1,44 @@
-
-
-version: '3.9'
+version: '3.8'
 services:
   db:
-    image: postgres:15
+    image: postgres:13
     environment:
-      POSTGRES_DB: airbnb_clone
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: your_password
+      POSTGRES_DB: airbnb
+      POSTGRES_USER: airbnb_user
+      POSTGRES_PASSWORD: airbnb_pass
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data/
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U airbnb_user -d airbnb"]
       interval: 10s
       timeout: 5s
       retries: 5
-
-  redis:
-    image: redis:7
-    ports:
-      - "6379:6379"
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   web:
     build: .
-    command: gunicorn airbnb.wsgi:application --bind 0.0.0.0:8000
+    command: ["python", "manage.py", "runserver", "0.0.0.0:8000"]
     volumes:
-      - .:/app
+      - .:/code
     ports:
       - "8000:8000"
-    env_file:
-      - .env
     depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-
-  celery:
-    build: .
-    command: celery -A airbnb worker --loglevel=info
-    volumes:
-      - .:/app
-    env_file:
-      - .env
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-
-  test:
-    build: .
-    command: python manage.py test listings
-    volumes:
-      - .:/app
-    env_file:
-      - .env
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-
+      - db
+    environment:
+      DEBUG: 1
+      DJANGO_DB_HOST: db
+      DJANGO_DB_PORT: 5432
+      DJANGO_DB_NAME: airbnb
+      DJANGO_DB_USER: airbnb_user
+      DJANGO_DB_PASSWORD: airbnb_pass
+      POSTGRES_DB: airbnb
+      POSTGRES_USER: airbnb_user
+      POSTGRES_PASSWORD: airbnb_pass
+      DATABASE_URL: postgresql://airbnb_user:airbnb_pass@db:5432/airbnb
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
 volumes:
   postgres_data:

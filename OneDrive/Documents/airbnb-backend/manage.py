@@ -3,6 +3,7 @@
 import os
 import sys
 from pathlib import Path
+from django.core.management import execute_from_command_line
 
 
 def main():
@@ -17,8 +18,21 @@ def main():
                 exec(compile(f.read(), str(venv_activate), 'exec'),
                      {'__file__': str(venv_activate)})
 
-        # type: ignore[reportMissingModuleSource]
-        from django.core.management import execute_from_command_line
+        # Run conversion and loading script using subprocess
+        import subprocess
+        try:
+            subprocess.run(
+                'docker-compose build web',
+                check=True, shell=True, text=True)
+            subprocess.run(
+                'docker-compose up -d web',
+                check=True, shell=True, text=True)
+            result = subprocess.run(
+                'docker-compose exec web bash convert_and_load.sh input.sql postgres_user postgres_db postgres_password',
+                check=True, capture_output=True, text=True)
+            print(result.stdout)
+        except subprocess.CalledProcessError as e:
+            print('Error running conversion script:', e.stderr)
     except ImportError as exc:
         raise ImportError(
             "Couldn't import Django. Are you sure it's installed and "
@@ -30,3 +44,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
