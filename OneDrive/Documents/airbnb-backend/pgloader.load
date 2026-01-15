@@ -1,6 +1,6 @@
 LOAD DATABASE
-    FROM mysql://root:your_mysql_password@mysql/airbnb_erd
-    INTO postgresql://airbnb_user:airbnb_pass@db:5432/airbnb
+    FROM mysql://root:your_mysql_password@localhost/airbnb_erd
+    INTO postgresql://airbnb_user:airbnb_pass@localhost:5432/airbnb
 
  WITH include no drop, create tables, create indexes, reset sequences, data only
 
@@ -11,3 +11,6 @@ LOAD DATABASE
 
  BEFORE LOAD DO
     $$ create schema if not exists public; $$
+
+RUN pip install django
+RUN python -m venv .venv

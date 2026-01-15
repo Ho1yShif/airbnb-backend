@@ -95,7 +95,7 @@ DATABASES = {
         'NAME': os.environ.get('DJANGO_DB_NAME', 'airbnb'),
         'USER': os.environ.get('DJANGO_DB_USER', 'airbnb_user'),
         'PASSWORD': os.environ.get('DJANGO_DB_PASSWORD', 'airbnb_pass'),
-        'HOST': os.environ.get('DJANGO_DB_HOST', 'db'),
+        'HOST': os.environ.get('DJANGO_DB_HOST', 'localhost'),
         'PORT': os.environ.get('DJANGO_DB_PORT', '5432'),
     }
 }

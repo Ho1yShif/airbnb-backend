@@ -1,5 +1,4 @@
-from django.urls import path, include
+from django.urls import path
 
-# This file previously contained DRF router and API endpoints.
-# All third-party code has been removed for a clean, professional Django-only project.
+# No API endpoints defined yet
 urlpatterns = []

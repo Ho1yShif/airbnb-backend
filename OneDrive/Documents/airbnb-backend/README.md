@@ -54,15 +54,17 @@ A scalable, secure backend solution for a property rental platform inspired by A
 
 1. **Clone and Install Dependencies**:
 ```bash
-git clone https://github.com/martin-mawien/airbnb-clone-project.git
-cd airbnb-clone-project
+git clone https://github.com/martin-mawien/airbnb-backend.git
+cd airbnb-backend
 pip install -r requirements.txt
 ```
 
 2. **Database Setup**:
-   - Install PostgreSQL
-   - Create database: `airbnb_clone`
-   - Update `.env` with database credentials
+  - Install PostgreSQL (locally or use Docker Compose)
+  - Create database: `airbnb_clone`
+  - Create user: `airbnb_user` with password `airbnb_pass` (or update `.env` accordingly)
+  - Grant all privileges on `airbnb_clone` to `airbnb_user`
+  - Update `.env` with database credentials (see below)
 
 3. **Run Migrations**:
 ```bash
@@ -80,16 +82,22 @@ python manage.py createsuperuser
 python manage.py runserver
 ```
 
+6. **Run Tests**:
+```bash
+python manage.py test
+```
+
 ## Environment Variables
 
-Create a `.env` file:
+Create a `.env` file (example for Docker Compose):
 ```
 DB_NAME=airbnb_clone
-DB_USER=postgres
-DB_PASSWORD=your_password
-DB_HOST=localhost
+DB_USER=airbnb_user
+DB_PASSWORD=airbnb_pass
+DB_HOST=db  # Use 'localhost' if running PostgreSQL locally
 DB_PORT=5432
 ```
+If running locally (not Docker), set DB_HOST=localhost.
 
 ## API Usage
 
@@ -133,6 +141,12 @@ POST /api/bookings/
 - **Monitoring**: Logging and error tracking
 - **Scaling**: Horizontal scaling with load balancers
 
+## Troubleshooting
+
+- If you see database authentication errors, ensure your `.env` matches your actual PostgreSQL user and password.
+- If using Docker Compose, make sure the database service is running: `docker-compose up db`
+- To reset the database, you may need to drop and recreate it, then re-run migrations.
+
 ## Contributing
 
 1. Fork the repository
@@ -149,3 +163,4 @@ Maintained by **Martin Mawien**.
 For questions, issues, or collaboration requests, please use the repository's issue tracker or contact via GitHub: [Martin-Mawien](https://github.com/martin-mawien).
 
 This project is for educational purposes. Ensure compliance with licensing requirements for any third-party integrations.
+

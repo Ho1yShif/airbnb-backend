@@ -28,3 +28,4 @@ class BookingModelTest(TestCase):
 	def test_booking_str(self):
 		self.assertIn('Test House', str(self.booking))
 		self.assertIn('guest', str(self.booking))
+
