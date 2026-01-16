@@ -1,3 +1,13 @@
+"""
+Django Admin Configuration for AirBnB Backend
+
+Author: Martin Mawien
+Copyright (c) 2026 Martin Mawien
+GitHub: https://github.com/Martin-Mawien/airbnb-backend
+
+Admin interface customization for all models.
+"""
+
 from django.contrib import admin
 from .models import UserProfile, Property, PropertyImage, Booking, Payment, Review, Wishlist
 

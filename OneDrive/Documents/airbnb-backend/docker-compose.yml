@@ -3,7 +3,7 @@ services:
   db:
     image: postgres:13
     environment:
-      POSTGRES_DB: airbnb
+      POSTGRES_DB: airbnb-backend
       POSTGRES_USER: airbnb_user
       POSTGRES_PASSWORD: airbnb_pass
     ports:
@@ -15,6 +15,19 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+  
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+  
   web:
     build: .
     command: ["python", "manage.py", "runserver", "0.0.0.0:8000"]
@@ -24,6 +37,7 @@ services:
       - "8000:8000"
     depends_on:
       - db
+      - redis
     environment:
       DEBUG: 1
       DJANGO_DB_HOST: db
@@ -35,10 +49,31 @@ services:
       POSTGRES_USER: airbnb_user
       POSTGRES_PASSWORD: airbnb_pass
       DATABASE_URL: postgresql://airbnb_user:airbnb_pass@db:5432/airbnb
+      REDIS_URL: redis://redis:6379/0
     logging:
       driver: "json-file"
       options:
         max-size: "200k"
         max-file: "10"
+  
+  celery:
+    build: .
+    command: celery -A airbnb worker --loglevel=info
+    volumes:
+      - .:/code
+    depends_on:
+      - db
+      - redis
+      - web
+    environment:
+      DEBUG: 1
+      DJANGO_DB_HOST: db
+      DJANGO_DB_PORT: 5432
+      DJANGO_DB_NAME: airbnb
+      DJANGO_DB_USER: airbnb_user
+      DJANGO_DB_PASSWORD: airbnb_pass
+      REDIS_URL: redis://redis:6379/0
+
 volumes:
   postgres_data:
+  redis_data:

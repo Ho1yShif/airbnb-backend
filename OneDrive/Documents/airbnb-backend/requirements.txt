@@ -1,1 +1,23 @@
-django>=4.2,<6.0
+# Django framework
+django>=4.2,<5.0
+djangorestframework>=3.14
+
+# Database
+psycopg2-binary>=2.9
+
+# Image handling
+Pillow>=9.0
+
+# API features
+django-filter>=23.0
+django-cors-headers>=4.0
+
+# Background tasks
+celery[redis]>=5.3
+redis>=4.5
+
+# Environment variables
+python-decouple>=3.8
+
+# Production server
+gunicorn>=21.0
