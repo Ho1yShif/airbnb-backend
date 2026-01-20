@@ -21,3 +21,9 @@ python-decouple>=3.8
 
 # Production server
 gunicorn>=21.0
+
+# API Documentation
+drf-yasg>=1.21
+
+# Static files
+whitenoise>=6.5
