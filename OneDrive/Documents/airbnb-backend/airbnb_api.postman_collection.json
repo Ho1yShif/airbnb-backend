@@ -1,0 +1,644 @@
+{
+  "info": {
+    "name": "AirBnB Backend API",
+    "description": "Complete API for AirBnB property rental platform",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{auth_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"john_doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"SecurePass123!\",\n  \"password2\": \"SecurePass123!\",\n  \"first_name\": \"John\",\n  \"last_name\": \"Doe\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/register/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "register", ""]
+            }
+          }
+        },
+        {
+          "name": "Login (Get Token)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"john_doe\",\n  \"password\": \"SecurePass123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/token/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "token", ""]
+            },
+            "tests": [
+              "var jsonData = pm.response.json();",
+              "pm.environment.set(\"auth_token\", jsonData.access);"
+            ]
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh\": \"{{refresh_token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/token/refresh/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "token", "refresh", ""]
+            }
+          }
+        },
+        {
+          "name": "Request Password Reset",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/password-reset/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "password-reset", ""]
+            }
+          }
+        },
+        {
+          "name": "Confirm Password Reset",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"uid\": \"user-id-from-email\",\n  \"token\": \"token-from-email\",\n  \"new_password\": \"NewSecurePass123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/password-reset-confirm/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "password-reset-confirm", ""]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Properties",
+      "item": [
+        {
+          "name": "List Properties",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/properties/?page=1&page_size=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "properties", ""],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "page_size",
+                  "value": "10"
+                },
+                {
+                  "key": "listing_status",
+                  "value": "available",
+                  "disabled": true
+                },
+                {
+                  "key": "nightly_rate__gte",
+                  "value": "50",
+                  "disabled": true
+                },
+                {
+                  "key": "nightly_rate__lte",
+                  "value": "500",
+                  "disabled": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Property",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"listing_title\": \"Modern Apartment in Downtown\",\n  \"property_location\": \"123 Main St, New York, NY 10001\",\n  \"nightly_rate\": \"150.00\",\n  \"property_description\": \"Beautiful modern apartment with stunning city views\",\n  \"listing_status\": \"available\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/properties/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "properties", ""]
+            }
+          }
+        },
+        {
+          "name": "Retrieve Property",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/properties/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "properties", "1", ""]
+            }
+          }
+        },
+        {
+          "name": "Update Property",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nightly_rate\": \"175.00\",\n  \"listing_status\": \"unavailable\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/properties/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "properties", "1", ""]
+            }
+          }
+        },
+        {
+          "name": "Delete Property",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/properties/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "properties", "1", ""]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Bookings",
+      "item": [
+        {
+          "name": "List My Bookings",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/bookings/?page=1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "bookings", ""],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "reservation_state",
+                  "value": "approved",
+                  "disabled": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Booking",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reserved_property\": 1,\n  \"arrival_date\": \"2026-02-15\",\n  \"departure_date\": \"2026-02-20\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/bookings/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "bookings", ""]
+            }
+          }
+        },
+        {
+          "name": "Retrieve Booking",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/bookings/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "bookings", "1", ""]
+            }
+          }
+        },
+        {
+          "name": "Update Booking Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reservation_state\": \"approved\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/bookings/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "bookings", "1", ""]
+            }
+          }
+        },
+        {
+          "name": "Cancel Booking",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/bookings/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "bookings", "1", ""]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reviews",
+      "item": [
+        {
+          "name": "List Reviews",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/reviews/?page=1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "reviews", ""],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Review",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reviewed_property\": 1,\n  \"rating\": 5,\n  \"comment\": \"Amazing property! Very clean and welcoming hosts.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/reviews/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "reviews", ""]
+            }
+          }
+        },
+        {
+          "name": "Retrieve Review",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/reviews/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "reviews", "1", ""]
+            }
+          }
+        },
+        {
+          "name": "Update Review",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rating\": 4,\n  \"comment\": \"Great property, slightly noisy area.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/reviews/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "reviews", "1", ""]
+            }
+          }
+        },
+        {
+          "name": "Delete Review",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/reviews/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "reviews", "1", ""]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Wishlist",
+      "item": [
+        {
+          "name": "List Wishlist",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/wishlist/?page=1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "wishlist", ""],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add to Wishlist",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"property\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/wishlist/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "wishlist", ""]
+            }
+          }
+        },
+        {
+          "name": "Remove from Wishlist",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/wishlist/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "wishlist", "1", ""]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "User Profile",
+      "item": [
+        {
+          "name": "Get My Profile",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/profile/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "profile", ""]
+            }
+          }
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"John Doe\",\n  \"biography\": \"I love traveling and meeting new people!\",\n  \"phone_number\": \"+1-555-0123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/profile/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "profile", ""]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Email Notifications",
+      "item": [
+        {
+          "name": "Send Email Notification",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"subject\": \"Booking Confirmed\",\n  \"message\": \"Your booking has been confirmed. Check-in is at 3 PM.\",\n  \"recipient\": \"guest@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/send-email/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "send-email", ""]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Health & Monitoring",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health/",
+              "host": ["{{base_url}}"],
+              "path": ["health", ""]
+            }
+          }
+        },
+        {
+          "name": "Liveness Probe",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health/live/",
+              "host": ["{{base_url}}"],
+              "path": ["health", "live", ""]
+            }
+          }
+        },
+        {
+          "name": "Readiness Probe",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health/ready/",
+              "host": ["{{base_url}}"],
+              "path": ["health", "ready", ""]
+            }
+          }
+        },
+        {
+          "name": "Metrics (Prometheus)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/metrics/",
+              "host": ["{{base_url}}"],
+              "path": ["metrics", ""]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "API Documentation",
+      "item": [
+        {
+          "name": "Swagger UI",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/swagger/",
+              "host": ["{{base_url}}"],
+              "path": ["swagger", ""]
+            }
+          }
+        },
+        {
+          "name": "OpenAPI Schema",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/swagger.json",
+              "host": ["{{base_url}}"],
+              "path": ["swagger.json"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "auth_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refresh_token",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}
