@@ -1,216 +1,299 @@
-"""
-Data Serializers for AirBnB Backend - Property Rental Platform
-
-Author: Martin Mawien
-Copyright (c) 2026 Martin Mawien
-GitHub: https://github.com/Martin-Mawien/airbnb-backend
-
-Provides serialization and validation for:
-- User profiles with role management
-- Property listings with nested images
-- Booking validation and conflict detection
-- Payment tracking
-- Review system with constraints
-- Wishlist management
-"""
-
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import UserProfile, Property, PropertyImage, Booking, Payment, Review, Wishlist
+from datetime import date
+from .models import UserProfile, Property, PropertyImage, Booking, Payment, Review, Wishlist, Address, CustomerPreferences
 
 
-class UserSerializer(serializers.ModelSerializer):
-	"""Serializer for Django User model"""
+class EmailNotificationSerializer(serializers.Serializer):
+	subject = serializers.CharField(max_length=255)
+	message = serializers.CharField()
+	recipient = serializers.EmailField()
+
+
+class AccountDataSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = User
 		fields = ['id', 'username', 'email', 'first_name', 'last_name']
 		read_only_fields = ['id']
 
 
-class UserProfileSerializer(serializers.ModelSerializer):
-	"""Serializer for user profiles with nested user data"""
-	user = UserSerializer(read_only=True)
-	username = serializers.CharField(source='user.username', read_only=True)
+# Alias for auth_views compatibility
+class UserSerializer(serializers.ModelSerializer):
+	class Meta:
+		model = User
+		fields = ['id', 'username', 'email', 'first_name', 'last_name', 'date_joined']
+		read_only_fields = ['id', 'date_joined']
+
+
+class ProfileDataSerializer(serializers.ModelSerializer):
+	account_info = AccountDataSerializer(source='user', read_only=True)
+	account_username = serializers.CharField(source='user.username', read_only=True)
 	
 	class Meta:
 		model = UserProfile
-		fields = ['id', 'user', 'username', 'name', 'email', 'role', 'phone', 'bio', 'avatar', 'created_at']
-		read_only_fields = ['id', 'created_at', 'user']
+		fields = ['id', 'user', 'account_username', 'account_info', 'full_name', 'contact_email', 'user_role', 'phone_number', 'biography', 'profile_picture', 'registration_date']
+		read_only_fields = ['id', 'registration_date', 'user']
 
 
-class PropertyImageSerializer(serializers.ModelSerializer):
-	"""Serializer for property images"""
+class ListingPhotoSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = PropertyImage
-		fields = ['id', 'property', 'image', 'is_primary', 'created_at']
-		read_only_fields = ['id', 'created_at']
+		fields = ['id', 'listing', 'photo', 'set_as_primary', 'uploaded_at']
+		read_only_fields = ['id', 'uploaded_at']
 
 
-class PropertySerializer(serializers.ModelSerializer):
-	"""Serializer for properties with nested images and owner info"""
-	owner_name = serializers.CharField(source='owner.username', read_only=True)
-	images = PropertyImageSerializer(many=True, read_only=True)
-	average_rating = serializers.SerializerMethodField()
-	review_count = serializers.SerializerMethodField()
+class ListingDataSerializer(serializers.ModelSerializer):
+	owner_username = serializers.CharField(source='property_owner.username', read_only=True)
+	attached_photos = ListingPhotoSerializer(many=True, read_only=True)
+	computed_average_score = serializers.SerializerMethodField()
+	feedback_total = serializers.SerializerMethodField()
 	
 	class Meta:
 		model = Property
 		fields = [
-			'id', 'owner', 'owner_name', 'title', 'location', 'price', 
-			'description', 'status', 'images', 'average_rating', 'review_count'
+			'id', 'property_owner', 'owner_username', 'listing_title', 'property_location', 'nightly_rate',
+			'property_description', 'listing_status', 'attached_photos', 'computed_average_score', 'feedback_total'
 		]
-		read_only_fields = ['id', 'owner']
+		read_only_fields = ['id', 'property_owner']
 	
-	def get_average_rating(self, obj):
-		"""Calculate average rating from reviews"""
-		reviews = obj.reviews.all()
-		if reviews:
-			return round(sum(r.rating for r in reviews) / len(reviews), 1)
+	def get_computed_average_score(self, obj):
+		feedback_items = obj.reviews.all()
+		if feedback_items:
+			score_sum = sum(item.rating_score for item in feedback_items)
+			return round(score_sum / len(feedback_items), 1)
 		return None
 	
-	def get_review_count(self, obj):
-		"""Get total number of reviews"""
+	def get_feedback_total(self, obj):
 		return obj.reviews.count()
 	
-	def validate_price(self, value):
-		"""Ensure price is positive"""
+	def validate_nightly_rate(self, value):
 		if value <= 0:
-			raise serializers.ValidationError("Price must be greater than 0")
+			raise serializers.ValidationError("Nightly rate must be a positive value")
 		return value
 
 
-class BookingSerializer(serializers.ModelSerializer):
-	"""Serializer for bookings with validation"""
-	user_name = serializers.CharField(source='user.username', read_only=True)
-	property_title = serializers.CharField(source='property.title', read_only=True)
-	total_nights = serializers.SerializerMethodField()
-	total_price = serializers.SerializerMethodField()
+class ReservationDataSerializer(serializers.ModelSerializer):
+	guest_username = serializers.CharField(source='guest.username', read_only=True)
+	property_name = serializers.CharField(source='reserved_property.listing_title', read_only=True)
+	stay_duration_nights = serializers.SerializerMethodField()
+	computed_cost = serializers.SerializerMethodField()
 	
 	class Meta:
 		model = Booking
 		fields = [
-			'id', 'user', 'user_name', 'property', 'property_title',
-			'check_in_date', 'check_out_date', 'status',
-			'total_nights', 'total_price'
+			'id', 'guest', 'guest_username', 'reserved_property', 'property_name',
+			'arrival_date', 'departure_date', 'reservation_state',
+			'stay_duration_nights', 'computed_cost'
 		]
-		read_only_fields = ['id', 'user']
+		read_only_fields = ['id', 'guest']
 	
-	def get_total_nights(self, obj):
-		"""Calculate total nights of stay"""
-		if obj.check_in_date and obj.check_out_date:
-			return (obj.check_out_date - obj.check_in_date).days
+	def get_stay_duration_nights(self, obj):
+		if obj.arrival_date and obj.departure_date:
+			return (obj.departure_date - obj.arrival_date).days
 		return 0
 	
-	def get_total_price(self, obj):
-		"""Calculate total price based on nights"""
-		nights = self.get_total_nights(obj)
-		return float(obj.property.price) * nights if nights > 0 else 0
+	def get_computed_cost(self, obj):
+		nights = self.get_stay_duration_nights(obj)
+		return float(obj.reserved_property.nightly_rate) * nights if nights > 0 else 0
 	
 	def validate(self, data):
-		"""Validate booking dates"""
-		check_in = data.get('check_in_date')
-		check_out = data.get('check_out_date')
+		arrival = data.get('arrival_date')
+		departure = data.get('departure_date')
 		
-		if check_in and check_out:
-			if check_out <= check_in:
-				raise serializers.ValidationError(
-					"Check-out date must be after check-in date"
-				)
+		if arrival and departure:
+			if departure <= arrival:
+				raise serializers.ValidationError({
+					'departure_date': 'Check-out must be later than check-in'
+				})
 			
-			# Check for overlapping bookings
-			property_obj = data.get('property')
-			overlapping = Booking.objects.filter(
-				property=property_obj,
-				status__in=['pending', 'confirmed']
-			).filter(
-				check_in_date__lt=check_out,
-				check_out_date__gt=check_in
+			night_count = (departure - arrival).days
+			if night_count < 1:
+				raise serializers.ValidationError({
+					'arrival_date': 'Minimum stay is one night'
+				})
+			
+			if night_count > 365:
+				raise serializers.ValidationError({
+					'departure_date': 'Stays exceeding 365 nights not permitted'
+				})
+			
+			property_target = data.get('reserved_property')
+			if property_target and property_target.listing_status != 'available':
+				raise serializers.ValidationError({
+					'reserved_property': 'Selected property is not available for booking'
+				})
+			
+			overlap_query = Booking.objects.filter(
+				reserved_property=property_target,
+				reservation_state__in=['awaiting_approval', 'approved']
 			)
 			
-			# Exclude current booking if updating
 			if self.instance:
-				overlapping = overlapping.exclude(id=self.instance.id)
+				overlap_query = overlap_query.exclude(pk=self.instance.pk)
 			
-			if overlapping.exists():
-				raise serializers.ValidationError(
-					"Property is already booked for these dates"
-				)
+			for existing_booking in overlap_query:
+				if not (departure <= existing_booking.arrival_date or 
+						arrival >= existing_booking.departure_date):
+					raise serializers.ValidationError({
+						'arrival_date': f'Dates conflict with existing reservation from {existing_booking.arrival_date} to {existing_booking.departure_date}'
+					})
 		
 		return data
 
 
-class PaymentSerializer(serializers.ModelSerializer):
-	"""Serializer for payments"""
-	booking_details = BookingSerializer(source='booking', read_only=True)
+class TransactionDataSerializer(serializers.ModelSerializer):
+	reservation_info = ReservationDataSerializer(source='reservation', read_only=True)
 	
 	class Meta:
 		model = Payment
-		fields = ['id', 'booking', 'booking_details', 'amount', 'status', 'payment_date']
-		read_only_fields = ['id', 'payment_date']
+		fields = ['id', 'reservation', 'reservation_info', 'transaction_amount', 'payment_state', 'processed_at']
+		read_only_fields = ['id', 'processed_at']
 	
-	def validate_amount(self, value):
-		"""Ensure amount is positive"""
+	def validate_transaction_amount(self, value):
 		if value <= 0:
-			raise serializers.ValidationError("Amount must be greater than 0")
+			raise serializers.ValidationError("Transaction amount must be positive")
 		return value
 
 
-class ReviewSerializer(serializers.ModelSerializer):
-	"""Serializer for reviews"""
-	user_name = serializers.CharField(source='user.username', read_only=True)
-	property_title = serializers.CharField(source='property.title', read_only=True)
+class FeedbackDataSerializer(serializers.ModelSerializer):
+	reviewer_username = serializers.CharField(source='reviewer.username', read_only=True)
+	listing_name = serializers.CharField(source='reviewed_property.listing_title', read_only=True)
 	
 	class Meta:
 		model = Review
 		fields = [
-			'id', 'user', 'user_name', 'property', 'property_title',
-			'booking', 'rating', 'comment'
+			'id', 'reviewer', 'reviewer_username', 'reviewed_property', 'listing_name',
+			'associated_booking', 'rating_score', 'review_text'
 		]
-		read_only_fields = ['id', 'user']
+		read_only_fields = ['id', 'reviewer']
 	
-	def validate_rating(self, value):
-		"""Ensure rating is between 1 and 5"""
+	def validate_rating_score(self, value):
 		if not (1 <= value <= 5):
-			raise serializers.ValidationError("Rating must be between 1 and 5")
+			raise serializers.ValidationError("Rating score must be within 1-5 range")
 		return value
 	
 	def validate(self, data):
-		"""Ensure user has booked the property before reviewing"""
-		user = self.context['request'].user
-		property_obj = data.get('property')
-		booking = data.get('booking')
+		current_user = self.context['request'].user
+		target_property = data.get('reviewed_property')
+		linked_booking = data.get('associated_booking')
 		
-		# Verify booking belongs to user and property
-		if booking:
-			if booking.user != user:
-				raise serializers.ValidationError("You can only review your own bookings")
-			if booking.property != property_obj:
-				raise serializers.ValidationError("Booking must be for the property being reviewed")
-			if booking.status != 'confirmed':
-				raise serializers.ValidationError("You can only review confirmed bookings")
+		if linked_booking:
+			if linked_booking.guest != current_user:
+				raise serializers.ValidationError({
+					'associated_booking': 'Reviews limited to your own reservations'
+				})
+				
+			if linked_booking.reserved_property != target_property:
+				raise serializers.ValidationError({
+					'reviewed_property': 'Property mismatch with selected reservation'
+				})
+				
+			if linked_booking.reservation_state not in ['approved', 'completed']:
+				raise serializers.ValidationError({
+					'associated_booking': 'Reviews restricted to approved or completed stays'
+				})
+				
+			if linked_booking.departure_date > date.today():
+				raise serializers.ValidationError({
+					'associated_booking': 'Cannot review upcoming reservations'
+				})
 		
-		# Check if user has already reviewed this property
-		if not self.instance:  # Only check on create, not update
-			existing_review = Review.objects.filter(
-				user=user,
-				property=property_obj
-			).exists()
-			if existing_review:
-				raise serializers.ValidationError("You have already reviewed this property")
+		if not self.instance:
+			duplicate_check = Review.objects.filter(
+				reviewer=current_user,
+				reviewed_property=target_property
+			)
+			
+			if linked_booking:
+				duplicate_check = duplicate_check.filter(associated_booking=linked_booking)
+			
+			if duplicate_check.exists():
+				raise serializers.ValidationError({
+					'reviewed_property': 'You have already submitted a review for this'
+				})
 		
 		return data
 
 
-class WishlistSerializer(serializers.ModelSerializer):
-	"""Serializer for wishlists with nested properties"""
-	properties = PropertySerializer(many=True, read_only=True)
-	property_count = serializers.SerializerMethodField()
+class SavedListingsSerializer(serializers.ModelSerializer):
+	saved_properties = ListingDataSerializer(many=True, read_only=True)
+	total_items = serializers.SerializerMethodField()
 	
 	class Meta:
 		model = Wishlist
-		fields = ['id', 'user', 'name', 'properties', 'property_count', 'created_at']
-		read_only_fields = ['id', 'user', 'created_at']
+		fields = ['id', 'owner', 'list_name', 'saved_properties', 'total_items', 'created_on']
+		read_only_fields = ['id', 'owner', 'created_on']
 	
-	def get_property_count(self, obj):
-		"""Get total number of properties in wishlist"""
-		return obj.properties.count()
+	def get_total_items(self, obj):
+		return obj.saved_properties.count()
+
+
+class LocationDataSerializer(serializers.ModelSerializer):
+	class Meta:
+		model = Address
+		fields = ['id', 'account_owner', 'address_category', 'street_line', 'city_name', 'state_province', 'postal_code', 'country_name', 'primary_address', 'created_at']
+		read_only_fields = ['id', 'account_owner', 'created_at']
+
+
+class UserPreferenceSerializer(serializers.ModelSerializer):
+	class Meta:
+		model = CustomerPreferences
+		fields = ['id', 'account', 'budget_min', 'budget_max', 'favorite_destinations', 'desired_amenities', 'enable_email_alerts', 'enable_sms_alerts', 'subscribe_newsletter', 'preference_set_on']
+		read_only_fields = ['id', 'account', 'preference_set_on']
+
+
+class AccountCreationSerializer(serializers.ModelSerializer):
+	secret_code = serializers.CharField(write_only=True, min_length=8)
+	confirm_secret = serializers.CharField(write_only=True, min_length=8)
+
+	class Meta:
+		model = User
+		fields = ['username', 'email', 'first_name', 'last_name', 'secret_code', 'confirm_secret']
+
+	def validate(self, data):
+		if data['secret_code'] != data.pop('confirm_secret'):
+			raise serializers.ValidationError({
+				"secret_code": "Password confirmation does not match"
+			})
+		
+		if len(data['secret_code']) < 8:
+			raise serializers.ValidationError({
+				"secret_code": "Password must contain at least 8 characters"
+			})
+		
+		if data['username'] and User.objects.filter(username__iexact=data['username']).exists():
+			raise serializers.ValidationError({
+				"username": "This username is already registered"
+			})
+		
+		if data.get('email') and User.objects.filter(email__iexact=data['email']).exists():
+			raise serializers.ValidationError({
+				"email": "This email address is already in use"
+			})
+		
+		return data
+
+	def create(self, validated_data):
+		secret = validated_data.pop('secret_code')
+		account = User.objects.create_user(
+			username=validated_data['username'],
+			email=validated_data.get('email', ''),
+			first_name=validated_data.get('first_name', ''),
+			last_name=validated_data.get('last_name', ''),
+			password=secret
+		)
+		
+		UserProfile.objects.filter(user=account).update(
+			user_role='guest',
+			full_name=f"{account.first_name} {account.last_name}".strip() or account.username,
+			contact_email=account.email
+		)
+		
+		CustomerPreferences.objects.create(account=account)
+		
+		return account
+
+
+class AuthenticationSerializer(serializers.Serializer):
+	account_name = serializers.CharField()
+	secret_code = serializers.CharField(write_only=True)
