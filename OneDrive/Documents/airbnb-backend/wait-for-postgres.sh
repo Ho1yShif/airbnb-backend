@@ -1,14 +1,13 @@
 #!/bin/sh
-# wait-for-postgres.sh
+# PostgreSQL service availability verification script
 set -e
 
-host="$1"
+db_host="$1"
 shift
 
-until PGPASSWORD="$POSTGRES_PASSWORD" psql -h "$host" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c '\q' 2>/dev/null; do
-  >&2 echo "Postgres is unavailable - sleeping"
+until PGPASSWORD="$POSTGRES_PASSWORD" psql -h "$db_host" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c '\q' 2>/dev/null; do
+  >&2 echo "Database service unavailable - waiting for readiness"
   sleep 1
 done
 
->&2 echo "Postgres is up - executing command"
-exec "$@"
+>&2 echo "Database service is operational - executing target command"

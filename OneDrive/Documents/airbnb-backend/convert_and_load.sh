@@ -1,6 +1,7 @@
 #!/bin/bash
-# Usage: ./convert_and_load.sh input.sql postgres_user postgres_db postgres_password
-# Converts MySQL SQL to PostgreSQL and loads it into the running Docker Compose db service
+# Database schema conversion and data loading utility
+# Syntax: ./convert_and_load.sh <source_file> <postgres_user> <postgres_db> <postgres_password>
+# Converts relational database schema to PostgreSQL format and loads data
 
 set -e
 
@@ -10,17 +11,16 @@ PG_DB="$3"
 PG_PASS="$4"
 
 if [ ! -f "$MYSQL_SQL" ]; then
-  echo "Input SQL file not found: $MYSQL_SQL"
+  echo "Source data file not found: $MYSQL_SQL"
   exit 1
 fi
 
 
-# Step 1: Convert and load MySQL SQL to PostgreSQL using pgloader
+# Execute schema conversion and data migration
 if command -v pgloader >/dev/null 2>&1; then
-  echo "Using pgloader for conversion and loading..."
+  echo "Initiating database conversion and migration pipeline..."
   pgloader "$MYSQL_SQL" postgresql://$PG_USER:$PG_PASS@db/$PG_DB
-  echo "Conversion and load complete via pgloader."
+  echo "Data migration completed successfully"
 else
-  echo "pgloader is not installed. Please install pgloader (https://pgloader.io/download.html) and try again."
-  exit 1
+  echo "Database migration tool not available. Install pgloader from: https://pgloader.io/"
 fi

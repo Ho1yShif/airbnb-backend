@@ -1,10 +1,7 @@
 """
-ASGI config for airbnb project.
+Asynchronous WSGI application entry point.
 
-It exposes the ASGI callable as a module-level variable named ``application``.
-
-For more information on this file, see
-https://docs.djangoproject.com/en/4.2/howto/deployment/asgi/
+Configures the application for deployment via ASGI-compatible servers.
 """
 
 import os

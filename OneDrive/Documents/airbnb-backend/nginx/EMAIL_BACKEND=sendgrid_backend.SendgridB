@@ -1,0 +1,2 @@
+EMAIL_BACKEND=sendgrid_backend.SendgridBackend
+SENDGRID_API_KEY=your-sendgrid-api-key
