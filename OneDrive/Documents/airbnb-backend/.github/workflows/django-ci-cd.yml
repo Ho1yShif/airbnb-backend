@@ -64,7 +64,7 @@ jobs:
 
       - name: Run migrations
         env:
-          DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+          DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY || 'test-key-for-ci' }}
           DEBUG: "False"
           DB_NAME: airbnb_test
           DB_USER: airbnb_user
@@ -78,14 +78,14 @@ jobs:
 
       - name: Collect static files
         env:
-          DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+          DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY || 'test-key-for-ci' }}
           DEBUG: "False"
         run: |
           python manage.py collectstatic --noinput || true
 
       - name: Run tests
         env:
-          DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+          DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY || 'test-key-for-ci' }}
           DEBUG: "False"
           DB_NAME: airbnb_test
           DB_USER: airbnb_user
@@ -94,6 +94,7 @@ jobs:
           DB_PORT: 5432
           CELERY_BROKER_URL: amqp://guest:guest@localhost:5672//
           CELERY_RESULT_BACKEND: rpc://
+          CELERY_TASK_ALWAYS_EAGER: "True"
         run: |
           python manage.py test --noinput
 
