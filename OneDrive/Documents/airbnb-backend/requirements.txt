@@ -27,3 +27,9 @@ drf-yasg>=1.21
 
 # Static files
 whitenoise>=6.5
+
+# Error tracking & monitoring
+sentry-sdk>=1.45
+
+# Health checks
+django-health-check>=3.16
