@@ -1,9 +1,8 @@
-version: '3.8'
 services:
   db:
     image: postgres:13
     environment:
-      POSTGRES_DB: airbnb-backend
+      POSTGRES_DB: airbnb
       POSTGRES_USER: airbnb_user
       POSTGRES_PASSWORD: airbnb_pass
     ports:
@@ -36,20 +35,24 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     environment:
-      DEBUG: 1
-      DJANGO_DB_HOST: db
-      DJANGO_DB_PORT: 5432
-      DJANGO_DB_NAME: airbnb
-      DJANGO_DB_USER: airbnb_user
-      DJANGO_DB_PASSWORD: airbnb_pass
-      POSTGRES_DB: airbnb
-      POSTGRES_USER: airbnb_user
-      POSTGRES_PASSWORD: airbnb_pass
-      DATABASE_URL: postgresql://airbnb_user:airbnb_pass@db:5432/airbnb
+      DEBUG: "1"
+      DB_NAME: airbnb
+      DB_USER: airbnb_user
+      DB_PASSWORD: airbnb_pass
+      DB_HOST: db
+      DB_PORT: "5432"
       REDIS_URL: redis://redis:6379/0
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/').read()\" || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
     logging:
       driver: "json-file"
       options:
@@ -62,17 +65,26 @@ services:
     volumes:
       - .:/code
     depends_on:
-      - db
-      - redis
-      - web
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      web:
+        condition: service_started
     environment:
-      DEBUG: 1
-      DJANGO_DB_HOST: db
-      DJANGO_DB_PORT: 5432
-      DJANGO_DB_NAME: airbnb
-      DJANGO_DB_USER: airbnb_user
-      DJANGO_DB_PASSWORD: airbnb_pass
+      DEBUG: "1"
+      DB_NAME: airbnb
+      DB_USER: airbnb_user
+      DB_PASSWORD: airbnb_pass
+      DB_HOST: db
+      DB_PORT: "5432"
       REDIS_URL: redis://redis:6379/0
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A airbnb inspect ping || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
 
 volumes:
   postgres_data:
