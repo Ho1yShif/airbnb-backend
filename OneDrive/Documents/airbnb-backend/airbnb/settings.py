@@ -1,5 +1,16 @@
 import os
 from pathlib import Path
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
+
+# Sentry Configuration for Error Tracking
+sentry_sdk.init(
+    dsn=os.environ.get("SENTRY_DSN", ""),
+    integrations=[DjangoIntegration()],
+    traces_sample_rate=float(os.environ.get("SENTRY_TRACES_SAMPLE_RATE", "1.0")),
+    send_default_pii=False,
+    environment=os.environ.get("ENVIRONMENT", "development"),
+)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -347,4 +358,18 @@ HEALTH_CHECK = {
 }
 
 import logging
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "INFO",
+    },
+}
 
