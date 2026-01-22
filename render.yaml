@@ -1,0 +1,117 @@
+services:
+
+  # Redis Cache
+  - type: redis
+    name: airbnb-redis
+    plan: starter
+    maxmemoryPolicy: allkeys-lru
+    ipAllowList: []
+
+  # Web Service (Django API)
+  - type: web
+    name: airbnb-backend-web
+    env: docker
+    dockerfilePath: ./Dockerfile.prod
+    plan: starter
+    healthCheckPath: /admin/
+    numInstances: 1
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "0"
+      - key: ALLOWED_HOSTS
+        value: .onrender.com
+      - key: DB_NAME
+        value: airbnb_production
+      - key: DB_USER
+        value: airbnb_user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: airbnb-postgres
+          property: password
+      - key: DB_HOST
+        fromDatabase:
+          name: airbnb-postgres
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: airbnb-postgres
+          property: port
+      - key: REDIS_URL
+        fromService:
+          name: airbnb-redis
+          type: redis
+          property: connectionString
+      - key: PYTHON_VERSION
+        value: "3.12"
+      - key: WEB_CONCURRENCY
+        value: "4"
+      - key: DISABLE_COLLECTSTATIC
+        value: "0"
+
+  # Celery Worker
+  - type: worker
+    name: airbnb-celery-worker
+    env: docker
+    dockerfilePath: ./Dockerfile.prod
+    dockerCommand: celery -A airbnb worker --loglevel=info --concurrency=2
+    plan: starter
+    envVars:
+      - key: DB_NAME
+        value: airbnb_production
+      - key: DB_USER
+        value: airbnb_user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: airbnb-postgres
+          property: password
+      - key: DB_HOST
+        fromDatabase:
+          name: airbnb-postgres
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: airbnb-postgres
+          property: port
+      - key: REDIS_URL
+        fromService:
+          name: airbnb-redis
+          type: redis
+          property: connectionString
+
+  # Celery Beat (Scheduled Tasks)
+  - type: worker
+    name: airbnb-celery-beat
+    env: docker
+    dockerfilePath: ./Dockerfile.prod
+    dockerCommand: celery -A airbnb beat --loglevel=info
+    plan: starter
+    envVars:
+      - key: DB_NAME
+        value: airbnb_production
+      - key: DB_USER
+        value: airbnb_user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: airbnb-postgres
+          property: password
+      - key: DB_HOST
+        fromDatabase:
+          name: airbnb-postgres
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: airbnb-postgres
+          property: port
+      - key: REDIS_URL
+        fromService:
+          name: airbnb-redis
+          type: redis
+          property: connectionString
+
+databases:
+  - name: airbnb-postgres
+    databaseName: airbnb_production
+    user: airbnb_user
+    plan: starter
