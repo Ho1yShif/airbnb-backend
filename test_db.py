@@ -32,28 +32,4 @@ try:
             SELECT table_name FROM information_schema.tables 
             WHERE table_schema = 'public' 
             ORDER BY table_name;
-        """)
-        tables = cursor.fetchall()
-        if tables:
-            print(f"Schema contains {len(tables)} tables")
-    
-    print("\nInspecting application models...
-    print("\n[4/4] Testing model access...")
-    from listings.models import Property, Booking, Payment, Review, PropertyImage, Wishlist, UserProfile
-    print(f"✓ Property: {Property._meta.db_table}")
-    print(f"✓ Booking: {Booking._meta.db_table}")
-    print(f"✓ Payment: {Payment._meta.db_table}")
-    print(f"✓ Review: {Review._meta.db_table}")
-    print(f"✓ PropertyImage: {PropertyImage._meta.db_table}")
-    print(f"✓ Wishlist: {Wishlist._meta.db_table}")
-    print(f"✓ UserProfile: {UserProfile._meta.db_table}")
-    
-    print("\n" + "=" * 70)
-    print("SUCCESS: All operations completed without errors!")
-    print("=" * 70)
-    
-except Exception as e:
-    print(f"\n✗ ERROR: {e}")
-    import traceback
-    traceback.print_exc()
-    sys.exit(1)
+        "
