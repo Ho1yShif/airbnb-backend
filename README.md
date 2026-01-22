@@ -1,5 +1,7 @@
 # AirBnB Backend - Property Rental Platform
 
+[![Django CI/CD](https://github.com/Martin-Mawien/airbnb-backend/actions/workflows/django-ci-cd.yml/badge.svg)](https://github.com/Martin-Mawien/airbnb-backend/actions/workflows/django-ci-cd.yml)
+
 Professional Django REST API for Airbnb-like property rental platform with comprehensive features for property management, bookings, payments, and reviews.
 
 **Author:** Martin Mawien  
