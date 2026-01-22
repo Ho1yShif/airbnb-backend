@@ -373,4 +373,4 @@ render scale <service-name> --instances=2
 
 ---
 
-**Need Help?** Open an issue on GitHub or contact support@yourdomain.com
+**Need Help?** Open an issue on the [GitHub repository](https://github.com/Martin-Mawien/airbnb-backend/issues)

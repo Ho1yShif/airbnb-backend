@@ -1,19 +1,4 @@
 services:
-  # PostgreSQL Database
-  - type: pserv
-    name: airbnb-postgres
-    env: docker
-    plan: starter
-    image:
-      repo: postgres
-      tag: "13"
-    envVars:
-      - key: POSTGRES_DB
-        value: airbnb_production
-      - key: POSTGRES_USER
-        value: airbnb_user
-      - key: POSTGRES_PASSWORD
-        generateValue: true
 
   # Redis Cache
   - type: redis
