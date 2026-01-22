@@ -44,7 +44,11 @@ jobs:
     
     - name: Run migrations
       env:
-        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/airbnb_test
+        DB_NAME: airbnb_test
+        DB_USER: postgres
+        DB_PASSWORD: postgres
+        DB_HOST: localhost
+        DB_PORT: 5432
         SECRET_KEY: test-secret-key-for-ci
         DEBUG: 'False'
       run: |
@@ -52,7 +56,11 @@ jobs:
     
     - name: Run tests
       env:
-        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/airbnb_test
+        DB_NAME: airbnb_test
+        DB_USER: postgres
+        DB_PASSWORD: postgres
+        DB_HOST: localhost
+        DB_PORT: 5432
         SECRET_KEY: test-secret-key-for-ci
         DEBUG: 'False'
       run: |
@@ -60,7 +68,11 @@ jobs:
     
     - name: Check Django configuration
       env:
-        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/airbnb_test
+        DB_NAME: airbnb_test
+        DB_USER: postgres
+        DB_PASSWORD: postgres
+        DB_HOST: localhost
+        DB_PORT: 5432
         SECRET_KEY: test-secret-key-for-ci
         DEBUG: 'False'
       run: |
